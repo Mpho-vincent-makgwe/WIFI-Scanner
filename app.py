@@ -7,11 +7,44 @@ import socket
 import threading
 import logging
 
-
 app = Flask(__name__)
 
+# Path to Aircrack-ng binaries
+AIRCRACK_PATH = os.path.join(os.getcwd(), "tools", "aircrack-ng-1.7-win")
+
+logging.basicConfig(level=logging.DEBUG)
+
+# Enable or disable monitor mode (Windows-specific implementation)
+def set_monitor_mode(interface, enable=True):
+    """Enable or disable monitor mode for a given interface."""
+    try:
+        aircrack_path = r"D:/Vince601/Documents/GitHub/Personal/WIFI-Scanner/tools/aircrack-ng-1.7-win/bin/airmon-ng.exe"
+        
+        # Define the command for enabling/disabling monitor mode
+        if enable:
+            command = [aircrack_path, "start", interface]
+        else:
+            command = [aircrack_path, "stop", interface]
+        
+        # Run the subprocess to execute the command
+        result = subprocess.run(command, check=True, capture_output=True, text=True)
+        
+        # Return success message if the command ran successfully
+        return f"Monitor mode {'enabled' if enable else 'disabled'} on {interface}. Output: {result.stdout}"
+    
+    except subprocess.CalledProcessError as e:
+        return f"Error: {e.stderr}"
+    except FileNotFoundError:
+        return "Error: 'airmon-ng.exe' not found. Ensure the path is correct."
+    except Exception as e:
+        return f"An unexpected error occurred: {str(e)}"
+
+
+
 def scan_wifi():
-    """Scans for available Wi-Fi networks using PyWiFi."""
+    """
+    Scans for available Wi-Fi networks using PyWiFi.
+    """
     wifi = PyWiFi()
     iface = wifi.interfaces()[0]  # Select the first Wi-Fi interface
     iface.scan()  # Initiate the scan
@@ -30,10 +63,10 @@ def scan_wifi():
         })
     return networks
 
-
-
 def connect_to_wifi(ssid):
-    """Connects to an open Wi-Fi network using PyWiFi."""
+    """
+    Connects to an open Wi-Fi network using PyWiFi.
+    """
     wifi = PyWiFi()
     iface = wifi.interfaces()[0]  # Select the first Wi-Fi interface
 
@@ -54,7 +87,9 @@ def connect_to_wifi(ssid):
         return "Failed to connect"
 
 def get_network_info():
-    """Fetches MAC address, IP address, and scans for open ports."""
+    """
+    Fetches MAC address, IP address, and scans for open ports.
+    """
     network_info = {"mac_address": None, "ip_address": None, "ports": []}
     try:
         # Get the default gateway and IP address
@@ -84,7 +119,6 @@ def get_network_info():
 
     return network_info
 
-
 @app.route('/')
 def home():
     return render_template("index.html")
@@ -93,7 +127,6 @@ def home():
 def scan():
     networks = scan_wifi()
     return jsonify(networks)
-
 
 @app.route('/connect', methods=['POST'])
 def connect():
@@ -106,7 +139,17 @@ def network_info():
     info = get_network_info()
     return jsonify(info)
 
+@app.route('/start_monitor_mode', methods=['POST'])
+def start_monitor_mode():
+    interface = request.json.get("interface", "wlan0")
+    message = set_monitor_mode(interface, enable=True)
+    return jsonify({"message": message})
+
+@app.route('/stop_monitor_mode', methods=['POST'])
+def stop_monitor_mode():
+    interface = request.json.get("interface", "wlan0")
+    message = set_monitor_mode(interface, enable=False)
+    return jsonify({"message": message})
+
 if __name__ == '__main__':
     app.run(debug=True)
-    
-logging.basicConfig(level=logging.DEBUG)

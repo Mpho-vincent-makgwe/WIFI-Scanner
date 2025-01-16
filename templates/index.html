@@ -34,7 +34,49 @@
             });
         }
 
+ async function startMonitorMode() {
+            const interface = document.getElementById("interfaceInput").value;
+            if (!interface) {
+                alert("Please enter an interface name.");
+                return;
+            }
+            try {
+                const response = await fetch("/start_monitor_mode", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ interface }),
+                });
+                const result = await response.json();
+                alert(result.message);
+            } catch (error) {
+                console.error("Error starting monitor mode:", error);
+                alert("Failed to start monitor mode. Check console for details.");
+            }
+        }
 
+        async function stopMonitorMode() {
+            const interface = document.getElementById("interfaceInput").value;
+            if (!interface) {
+                alert("Please enter an interface name.");
+                return;
+            }
+            try {
+                const response = await fetch("/stop_monitor_mode", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ interface }),
+                });
+                const result = await response.json();
+                alert(result.message);
+            } catch (error) {
+                console.error("Error stopping monitor mode:", error);
+                alert("Failed to stop monitor mode. Check console for details.");
+            }
+        }
     </script>
 </head>
 <body>
@@ -43,5 +85,12 @@
     <ul id="networks"></ul>
     <h2>Network Info:</h2>
     <pre id="info"></pre>
+    <div>
+        <h2>Monitor Mode Control</h2>
+        <label for="interfaceInput">Network Interface:</label>
+        <input type="text" id="interfaceInput" placeholder="e.g., wlan0">
+        <button onclick="startMonitorMode()">Start Monitor Mode</button>
+        <button onclick="stopMonitorMode()">Stop Monitor Mode</button>
+    </div>
 </body>
 </html>
