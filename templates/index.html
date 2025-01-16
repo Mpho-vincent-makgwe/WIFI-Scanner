@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wi-Fi Scanner</title>
+    <script>
+        async function fetchNetworkInfo(ssid) {
+            alert(`Fetching info for SSID: ${ssid}`);
+            console.log("SENDING  ")
+            const response = await fetch('/network_info');
+            const info = await response.json();
+            document.getElementById('info').textContent = JSON.stringify(info, null, 2);
+        }
+        async function scanNetworks() {
+            const response = await fetch('/scan');
+            const networks = await response.json();
+            const list = document.getElementById('networks');
+            list.innerHTML = ''; // Clear the list
+
+            networks.forEach(network => {
+                const li = document.createElement('li');
+
+                // Display network information
+                li.innerHTML = `
+                    <strong>SSID:</strong> ${network.ssid}<br>
+                    <strong>Signal:</strong> ${network.signal}<br>
+                    <strong>BSSID:</strong> ${network.bssid}<br>
+                    <strong>Auth:</strong> ${network.auth}<br>
+                    <button onclick="fetchNetworkInfo('${network.ssid}')">Get Network Info</button>
+                `;
+
+                list.appendChild(li);
+            });
+        }
+
+
+    </script>
+</head>
+<body>
+    <h1>Wi-Fi Scanner</h1>
+    <button onclick="scanNetworks()">Scan for Wi-Fi Networks</button>
+    <ul id="networks"></ul>
+    <h2>Network Info:</h2>
+    <pre id="info"></pre>
+</body>
+</html>
