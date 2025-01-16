@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.DEBUG)
 def set_monitor_mode(interface, enable=True):
     """Enable or disable monitor mode for a given interface."""
     try:
-        aircrack_path = r"D:/Vince601/Documents/GitHub/Personal/WIFI-Scanner/tools/aircrack-ng-1.7-win/bin/airmon-ng.exe"
+        aircrack_path = r"./tools/aircrack-ng-1.7-win/bin/airmon-ng.exe"
         
         # Define the command for enabling/disabling monitor mode
         if enable:
